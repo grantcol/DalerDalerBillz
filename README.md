@@ -9,3 +9,6 @@ CS 310 Team 8
 ## Tools/APIs
 To test the project locally I would suggest using [MAMP](http://www.mamp.info/en/) which is free and pretty common for testing PHP/MySQL apps. It's pretty straight forward to set up and run. 
 Along with [The Echonest](http://developer.echonest.com/) and [LyricFind](http://developer.echonest.com/sandbox/lyricfind.html) APIs, we will also be using the [Spotify Web Api](https://developer.spotify.com/web-api) for the artist searching, images and song names since they have a neat [/search endpoint](https://developer.spotify.com/web-api/search-item/) which makes things much easier for autocomplete and general search queries. Check the linked docs if you have any questions about querying the provided endpoints. 
+
+## Repo Organization 
+Should be pretty simple. Just keep secondary HTML, js and PHP files in their respective folders. Leave index.html at the root for easy access. Comment your code briefly. Cleanup dead files and leftovers before merges etc. 
