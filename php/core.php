@@ -1,5 +1,4 @@
 <?php 
-
 class Artist
 {
 	public $mName;
@@ -30,17 +29,25 @@ class Song
 	public $mLyrics;
 	public $mWords;
 
-	private $mBlackList = array('fuck', 'shit', 'ass', 'bitch', 'goddamn');
+	private $mBlackList = array(
+									'fuck', 'shit', 'ass', 'bitch', 'damn', 'nigga',
+									'I', 'as', 'a', 'the'
+								);
+
 	public function parseLyrics() {
-		$words = array();
-		foreach($mLyrics as $l){
-			if(!in_array($l, $mBlackList)) {
-				$words[$l];
-			} 
-			else {
-				str_replace();
+		$fileContents = file_get_contents("../tests/legend.txt");
+		if($fileContents != FALSE) {
+			$mLyrics = explode(" ", $fileContents);
+			foreach($mLyrics as $l) {
+				if(!in_array($l, $mBlackList)) {
+					$mWords[$l] += 1;
+				}
 			}
-			
+		}
+		else {
+			echo "failed";
+			$mLyrics = NULL;
+			$mWords  = NULL;
 		}
 	}
 }
@@ -66,3 +73,15 @@ class Cloud
 	public $mLyrics;
 }
 ?>
+<!--<!DOCTYPE html>
+<html>
+<head>
+<title> LyricsCloud </title>
+</head>
+	<body>
+		<?php 
+			$testSong = new Song();
+			$testSong->parseLyrics();
+		?>
+	</body>
+</html>-->
