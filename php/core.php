@@ -85,6 +85,10 @@ class Cloud
 	public $mArtist;
 	public $mWords;
 
+	public function __construct($artist) {
+		$mArtist = $artist;
+		generateCloud();
+	}
 	//Loop through mArtist's list of songs and find the most frequent words
 	public function findMostFrequent() {
 		$words = $mArtist->$mSongs->$mWords
@@ -108,7 +112,8 @@ class Cloud
 			//Choose a size falue based on the freq of the word
 			//For now, until css is complete just add the word at standard size
 			foreach( $mWords as $word => $freq ) {
-				echo "<span class='cloudWord'><a href="'#'">".$word."</a></span>";
+				//if($freq > 100) { $class = 'cloudBig'; }
+				echo "<span class='dummy'><a href="'#'">".$word."</a></span>";
 			}
 		}
 	}
