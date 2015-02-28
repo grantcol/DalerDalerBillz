@@ -2,6 +2,7 @@
 
 // Query Helpers
 
+//Query type factory
 function getQuery( $type,  $str ) {
 	if( $type == "search" ) { return spQuerySearchArtist( $str ) ; }
 	else if( $type == "artist" ) { return spQueryGetArtist( $str ); }
@@ -35,11 +36,12 @@ function parseSpResponse( $data ) {
 	$dataArr = json_decode($data, true);
 	foreach($dataArr["artists"]["items"] as $d) {
 		$artistName = str_replace($_POST['hintStr'], '<b>'.$_POST['hintStr'].'</b>', $d["name"]);
-		echo '<li id="'.$d["id"].'" onclick="setSelect(\''.str_replace("'", "\'", $d["name"]).'\')">'.$artistName.'</li>';
+		echo '<li id="'.$d["id"].'" onclick="setSelect(\''.str_replace("'", "\'", $d["name"]).'\')"><a href="html/cloudpage.html?artistId='.$d["id"].'">'.$artistName.'</a></li>';
 	}
 }
-$reqType = "search";//$_POST["reqType"];
+
 $hintStr = spSanitize($_POST['hintStr']);
+$reqType = "search";//$_POST["reqType"];
 $spQueryStr = getQuery($reqType, $hintStr);
 
 //Set up a cURL resource for the semantic request
