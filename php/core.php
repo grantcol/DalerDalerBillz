@@ -30,7 +30,19 @@ class Song
 	public $mLyrics;
 	public $mWords;
 
-	public function parseLyrics() {}
+	private $mBlackList = array('fuck', 'shit', 'ass', 'bitch', 'goddamn');
+	public function parseLyrics() {
+		$words = array();
+		foreach($mLyrics as $l){
+			if(!in_array($l, $mBlackList)) {
+				$words[$l];
+			} 
+			else {
+				str_replace();
+			}
+			
+		}
+	}
 }
 
 class Album 

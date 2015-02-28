@@ -28,3 +28,17 @@ function setSelect(sel) {
 	$('#artist_list').val(sel);
 	$('#artist_list').hide();
 }
+
+function spArtistQuery(artistId) {
+	$.ajax({
+		url : 'php/request',
+		type : 'POST',
+		data : { artistId : artistId },
+		success : function(data) {
+			console.log(data);
+			//setup the 2nd page here with wordcloud etc.
+			//should probably recieve a json encoded array
+		},
+		error: function (jqXHR, textStatus, errorThrown) { console.log("REQUEST FAILED"); }
+	});
+}
