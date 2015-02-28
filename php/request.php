@@ -1,12 +1,23 @@
 <?php
 
 // Query Helpers
+
+function getQuery( $type,  $str ) {
+	if( $type == "search" ) { return spQuerySearchArtist( $str ) ; }
+	else if( $type == "artist" ) { return spQueryGetArtist( $str ); }
+} 
+
 function spQuerySearchArtist( $searchStr ) {
 	//sp web API limits queries to 2 wildcard (*) ops per call
 	//so we'll append just one to end string just in case
 	$spSearchEndpoint = "https://api.spotify.com/v1/search?q=";
 	return $spSearchEndpoint.$searchStr."*&type=artist";
 }
+
+function spQueryGetArtist( $artistId ) {
+	$spSearchArtistEndPoint = "https://api.spotify.com/v1/artists/";
+	return $spSearchArtistEndPoint.$artistId;
+}  
 
 //Santize the hint string given by ajax.
 //Making this a reusable function just in case
@@ -18,18 +29,18 @@ function spSanitize( $request ) {
 
 //Decode JSON response from external API. Expects a JSON encoded string
 //Need this to return usable, HTML ready strings to asking js function. 
-function parseResponse( $data ) {
+function parseSpResponse( $data ) {
 	//Decode JSON obj returned from SWA. 
 	//2nd param is true for assoc array ret val
 	$dataArr = json_decode($data, true);
 	foreach($dataArr["artists"]["items"] as $d) {
-		$artistName = str_replace($hintStr, '<b>'.$hintStr.'</b>', $d["name"]);
-		echo '<li onclick="setSelect(\''.str_replace("'", "\'", $d["name"]).'\')">'.$artistName.'</li>';
+		$artistName = str_replace($_POST['hintStr'], '<b>'.$_POST['hintStr'].'</b>', $d["name"]);
+		echo '<li id="'.$d["id"].'" onclick="setSelect(\''.str_replace("'", "\'", $d["name"]).'\')">'.$artistName.'</li>';
 	}
 }
-
+$reqType = "search";//$_POST["reqType"];
 $hintStr = spSanitize($_POST['hintStr']);
-$spQueryStr = spQuerySearchArtist($hintStr);
+$spQueryStr = getQuery($reqType, $hintStr);
 
 //Set up a cURL resource for the semantic request
 $curl = curl_init();
@@ -39,9 +50,10 @@ curl_setopt_array($curl, array(
 ));
 
 $spArtistData = curl_exec($curl);
+
 curl_close($curl);
 
-parseResponse($spArtistData);
+parseSpResponse($spArtistData);
 
 
 ?>

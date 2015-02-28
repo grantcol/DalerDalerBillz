@@ -4,12 +4,11 @@
 function autoCompleteQuery() {
 	var minLen = 0;
 	var hintStr = $("#artist_search").val();
-	var reqType = "search";
 	if(hintStr.length >= minLen) {
 		$.ajax({ 
-			url : 'php/request.php',
+			url : 'request.php',
 			type : 'POST',
-			data : { hintStr: hintStr, reqType: reqType },
+			data : { hintStr : hintStr },
 			success : function(data) {
 				$('#artist_list').show();
 				$('#artist_list').html(data);
