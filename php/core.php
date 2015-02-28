@@ -34,6 +34,15 @@ class Song
 									'I', 'as', 'a', 'the'
 								);
 
+	public function __construct($name, $artist) {
+		$mName = $name;
+		$mArtist = $artist;
+	}
+
+	public function setLyrics($lyrics) {
+		$mLyrics = $lyrics;
+	}
+
 	public function parseLyrics() {
 		$fileContents = file_get_contents("../tests/legend.txt");
 		if($fileContents != FALSE) {
@@ -49,6 +58,10 @@ class Song
 			$mLyrics = NULL;
 			$mWords  = NULL;
 		}
+	}
+
+	public function getFrequency($word) {
+		return $mWords[$word];
 	}
 }
 
