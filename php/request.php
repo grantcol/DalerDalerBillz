@@ -3,9 +3,10 @@
 // Query Helpers
 
 //Query type factory
-function getQuery( $type,  $str ) {
-	if( $type == "search" ) { return spQuerySearchArtist( $str ) ; }
-	else if( $type == "artist" ) { return spQueryGetArtist( $str ); }
+function getQuery( $type,  $qArg1, $qArg2 = "none" ) {
+	if( $type == "search" ) { return spQuerySearchArtist( $qArg1 ) ; }
+	else if( $type == "artist" ) { return spQueryGetArtist( $qArg1 ); }
+	//else if( $type == "songs" && $qArg2 != "none" ) { return enQuerySearchSong( $qArg1, $qArg2 ); }
 } 
 
 function spQuerySearchArtist( $searchStr ) {
@@ -17,8 +18,18 @@ function spQuerySearchArtist( $searchStr ) {
 
 function spQueryGetArtist( $artistId ) {
 	$spSearchArtistEndPoint = "https://api.spotify.com/v1/artists/";
-	return $spSearchArtistEndPoint.$artistId;
+	return $spSearchArtistEndPoint.$artistId."/top-tracks?country=US";
 }  
+
+function enQuerySearchSong( $artist, $song ) {
+	$lyricFindBucketId 		= "bucket=id:lyricfind-US&limit=true&bucket=tracks";
+	$enApiKey 				= "6DJYT8JMVXSOHNC92";
+	$enResponseFormat 		= "&format=json";
+	$enSearchArtist			= "artist=".$artist;
+	$enSearchTitle 			= "title=".$song;
+	$enSongSearchEndPoint 	= "http://developer.echonest.com/api/v4/song/search?api_key=";
+	return $enSongSearchEndPoint.$enApiKey.$enResponseFormat."&".$enSearchArtist."&".$enSearchTitle."&".$lyricFindBucketId;
+} 
 
 //Santize the hint string given by ajax.
 //Making this a reusable function just in case
@@ -26,6 +37,11 @@ function spQueryGetArtist( $artistId ) {
 function spSanitize( $request ) {
 	//spotify uses '+' to escape white space
 	return str_replace(" ", "+", $request);
+}
+
+function getParser( $type, $data ) {
+	if( $type == "search" ) { parseSpResponse( $data ) ; }
+	else if( $type == "artist" ) { parseEnResponse( $data ); }
 }
 
 //Decode JSON response from external API. Expects a JSON encoded string
@@ -40,22 +56,30 @@ function parseSpResponse( $data ) {
 	}
 }
 
+function parseEnResponse( $data ) {
+	$dataArr 		= json_decode($data, true);
+	$catalog 		= $dataArr["catalog"];
+	$lcForeignId 	= $dataArr["foreign_id"];
+	if($catalog == "lyricfind-US") { return $lcForeignId; }
+	return null;
+}
+
+function execRequest( $query ) {
+	//Set up a cURL resource for the semantic request
+	$curl = curl_init();
+	curl_setopt_array($curl, array(
+		CURLOPT_RETURNTRANSFER => 1,
+		CURLOPT_URL => $query
+	));
+	$responseData = curl_exec($curl);
+	curl_close($curl);
+	return $responseData;
+}
+
 $hintStr = spSanitize($_POST['hintStr']);
-$reqType = "search";//$_POST["reqType"];
-$spQueryStr = getQuery($reqType, $hintStr);
-
-//Set up a cURL resource for the semantic request
-$curl = curl_init();
-curl_setopt_array($curl, array(
-	CURLOPT_RETURNTRANSFER => 1,
-	CURLOPT_URL => $spQueryStr
-));
-
-$spArtistData = curl_exec($curl);
-
-curl_close($curl);
-
-parseSpResponse($spArtistData);
-
+$reqType = $_POST["reqType"];
+$query = getQuery($reqType, $hintStr);
+$responseData = execRequest($query);
+getParser($reqType, $responseData);
 
 ?>

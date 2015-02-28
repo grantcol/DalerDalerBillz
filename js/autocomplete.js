@@ -9,7 +9,7 @@ function autoCompleteQuery() {
 		$.ajax({ 
 			url : 'php/request.php',
 			type : 'POST',
-			data : { hintStr: hintStr, reqType: reqType },
+			data : { hintStr : hintStr,  reqType : reqType },
 			success : function(data) {
 				$('#artist_list').show();
 				$('#artist_list').html(data);
