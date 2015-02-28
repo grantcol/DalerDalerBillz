@@ -1,0 +1,11 @@
+<!-- lc_cloudpage.html -->
+<!DOCTYPE html>
+<html>
+<head>
+<title> LyricsCloud </title>
+<script type="text/javascript" src="..js/jquery-1.11.2.min.js"></script>
+<script type="text/javascript" src="..js/autocomplete.js"></script>
+</head>
+	<body>
+	</body>
+</html>
