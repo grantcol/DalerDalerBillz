@@ -2,19 +2,68 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title> LyricsCloud </title>
-<script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
-<script type="text/javascript" src="js/autocomplete.js"></script>
+  <link href="../css/lyricscloud.css" rel="stylesheet" type="text/css"/>
+  <title> LyricsCloud </title>
+  <script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+  <script type="text/javascript" src="js/autocomplete.js"></script>
+  <script> 
+    $(document).ready(function(){
+      $("#go").click(function(){
+        $(".move").animate({"bottom": "-=100"}, "slow");
+      })
+    });
+  </script> 
+  <style>
+
+    body {
+      background-color: #bfbfbf;
+    }
+    button {
+      background-color: #bf55ec;
+      border-color: #bf55ec;
+      font-family: Helvetica;
+      width: 70px;
+      height: 30px;
+    }
+
+    input {
+      border-color: #bf55ec;
+    }
+
+    .container{
+      margin-right: auto;
+      margin-left: auto;
+    }
+
+    .move{
+      z-index: -1;
+    }
+    ul { 
+      list-style-type: none; 
+      list-style-image: none; 
+    } 
+    li{
+      text-decoration: none;
+    }
+  </style>
 </head>
-	<body>
-		<div class="container">
-			<h2>Search an Artist</h2>
-			<div>
-				<form>
-					<input type="text" id="artist_search" onkeyup="autoCompleteQuery();">
-					<ul id="artist_list"></ul>
-				</form>
-			</div>
-		</div>
-	</body>
+<body>
+  <div class="container">
+      <center>
+      <h2> LyricsCloud </h2>
+      <div id = "cloud" style = "background-color:white;display:none;width:500px;height:300px">This is the word cloud</div>
+      </br>
+      </br>
+      <div class = "move">
+        <input type="text" id="artist_search" onkeyup="autoCompleteQuery();" >
+        <ul id="artist_list">
+          <li></li>
+        </ul>
+        <button id ="go" onclick="$('#cloud').show(); $('#add').show(); $('#facebook').show();">Go</button>
+        <button id ="add" style="display:none">Add</button>
+        <button id ="facebook" style="display:none">FaceBook</button>
+      </center>
+    </div>
+  </div>
+</body>
 </html>
