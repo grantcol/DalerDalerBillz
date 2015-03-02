@@ -123,6 +123,7 @@ class Cloud
 <html>
 <head>
 <title> LyricsCloud </title>
+<link rel="stylesheet" href="../css/lyricscloud.css">
 </head>
 	<body>
 		<?php 
