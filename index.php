@@ -8,12 +8,26 @@
   <script type="text/javascript" src="js/autocomplete.js"></script>
   <meta property="og:title" content="My Lyric Cloud" />
   <meta property="og:description" content="Check out my lyric cloud!" > 
-  <script> 
+  <script>
     $(document).ready(function(){
       $("#go").click(function(){
         $(".move").animate({"bottom": "-=100"}, "slow");
-      })
+        /*var canvas = document.getElementById("cloud");
+        var dataURL = canvas.toDataURL("image/png");
+        console.log(dataURL);
+        var share_button = document.getElementById("facebook");
+        share_button.dataset.href = dataURL;*/
+        generateWordCloud();
+      });
     });
+
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) return;
+      js = d.createElement(s); js.id = id;
+      js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.0&appId=1379329692385179";
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
   </script> 
   <style>
 
@@ -40,6 +54,12 @@
     .move{
       z-index: -1;
     }
+
+    #cloud {
+    	overflow: scroll;
+
+    }
+
     ul { 
       list-style-type: none; 
       list-style-image: none; 
@@ -53,7 +73,7 @@
   <div class="container">
       <center>
       <h2> LyricsCloud </h2>
-      <div id = "cloud" style = "background-color:white;display:none;width:500px;height:300px">This is the word cloud</div>
+      <div id="cloud" data-href="null" style="background-color:white;display:none;width:500px;height:300px">This is the word cloud</div>
       </br>
       </br>
       <div class = "move">
@@ -64,23 +84,10 @@
         <button id ="go" onclick="$('#cloud').show(); $('#add').show(); $('#facebook').show();">Go</button>
         <button id ="add" style="display:none">Add</button>
 </br>
-
-          <div id="fb-root"></div>
-
-          <script>(function(d, s, id) {
-
-          var js, fjs = d.getElementsByTagName(s)[0];
-          if (d.getElementById(id)) return;
-          js = d.createElement(s); js.id = id;
-          js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.0&appId=1379329692385179";
-         fjs.parentNode.insertBefore(js, fjs);
-         }(document, 'script', 'facebook-jssdk'));</script>
-
-         <div id = "facebook" style = "display:none" class="fb-share-button" data-layout="button"></div>
-
-      
+         <div id = "facebook" style = "display:none" class="fb-share-button" data-href="" data-layout="button"></div>
       </center>
     </div>
   </div>
+  <script type="text/javascript" src="http://tracking.musixmatch.com/t1.0/AMa6hJCIEzn1v8RuOP"></script>
 </body>
 </html>

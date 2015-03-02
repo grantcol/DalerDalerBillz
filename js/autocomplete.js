@@ -23,9 +23,9 @@ function autoCompleteQuery() {
 }
 
 //Fills the input with the selected artist
-function setSelect(sel) {
+function setSelect(item) {
 	
-	$('#artist_list').val(sel);
+	$('#artist_search').val(item);
 	$('#artist_list').hide();
 }
 
@@ -40,5 +40,23 @@ function spArtistQuery(artistId) {
 			//should probably recieve a json encoded array
 		},
 		error: function (jqXHR, textStatus, errorThrown) { console.log("REQUEST FAILED"); }
+	});
+}
+
+function generateWordCloud() {
+	var hintStr = $("#artist_search").val();
+	$.ajax({
+		url : 'php/request.php',
+		type : 'POST',
+		data : { hintStr : hintStr, reqType : 'track' },
+		success : function(data) {
+			console.log(data);
+			//setup the 2nd page here with wordcloud etc.
+			//should probably recieve a json encoded array
+			var cloud = data['cloud_string'];
+			$("#cloud").html(cloud);
+		},
+		dataType : "json",
+		error: function (jqXHR, textStatus, errorThrown) { console.log("REQUEST FAILED: "+textStatus+" "+errorThrown); console.log(jqXHR); }
 	});
 }

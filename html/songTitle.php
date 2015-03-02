@@ -1,14 +1,11 @@
 <?php 
 include '../php/core.php';
-
 session_start();
-$artist = null;
 $word = $_GET['wordRef'];
 $freq = null;
-if($_SESSION['artist']){
-	$artist = $_SESSION['artist'];
-	$freq = $artist->getFrequency($word);
-}
+$artist = $_SESSION['artist'];
+$freq = $artist->getFrequency($word);
+var_dump($freq);
 ?>
 <!DOCTYPE html>
 <html>
@@ -68,7 +65,7 @@ if($_SESSION['artist']){
 		<?php 
 		if(count($freq) > 0){
 			foreach($freq as $key => $value){
-				echo '<tr><th><a href="lyricPage.html?title='.$key.'&artist='.$artist->mName.'>'.$key.'</a></th><th>'.$value.'</th></tr>';
+				echo '<tr><th><a href="lyricPage.php?word='.$word.'&track_title='.$key.'&track_id='.$artist->getSongId($key).'&artist='.$artist->mName.'">'.$key.'</a></th><th>'.$value.'</th></tr>';
 			}
 		}
 		?>

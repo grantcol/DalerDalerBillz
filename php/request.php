@@ -1,11 +1,15 @@
 <?php
-
+include 'core.php';
+session_id('request');
+session_start();
 // Query Helpers
 
 //Query type factory
 function getQuery( $type,  $qArg1, $qArg2 = "none" ) {
 	if( $type == "search" ) { return spQuerySearchArtist( $qArg1 ) ; }
-	else if( $type == "artist" ) { return spQueryGetArtist( $qArg1 ); }
+	else if( $type == "artist" ) { return mmQuerySearchArtists( $qArg1 ); }
+	else if( $type == "track" ) { return mmQueryGetArtistTracks( $qArg1 ); }
+	else if( $type == "lyrics" ) { return mmQueryGetLyrics( $qArg1 ); }
 	//else if( $type == "songs" && $qArg2 != "none" ) { return enQuerySearchSong( $qArg1, $qArg2 ); }
 } 
 
@@ -31,6 +35,33 @@ function enQuerySearchSong( $artist, $song ) {
 	return $enSongSearchEndPoint.$enApiKey.$enResponseFormat."&".$enSearchArtist."&".$enSearchTitle."&".$lyricFindBucketId;
 } 
 
+function mmQuerySearchArtists( $artistName ) {
+	$mmApiKey = "5a9df367bba4f12c95e7ba3111d410c6";
+	$mmApiRootUrl = "http://api.musixmatch.com/ws/1.1/";
+	$mmApiArtistSearchEndpoint = "artist.search?";
+	$mmArtist = "q_artist=".$artistName;
+	$mmPageSize = "page_size=1";
+	$mmQuery = $mmApiRootUrl."apikey=".$mmApiKey."&".$mmApiArtistSearchEndpoint.$mmArtist."&".$mmPageSize;
+	return $mmQuery;
+}
+
+function mmQueryGetArtistTracks( $artist ) {
+	$mmApiKey = "5a9df367bba4f12c95e7ba3111d410c6";
+	$mmApiRootUrl = "http://api.musixmatch.com/ws/1.1/";
+	$mmArtistTracksEndpoint = "track.search?";
+	$mmArtist = "q_artist=".$artist;
+	$mmQuery = $mmApiRootUrl.$mmArtistTracksEndpoint."apikey=".$mmApiKey."&".$mmArtist."&f_has_lyrics=1";
+	return $mmQuery;
+}
+
+function mmQueryGetLyrics( $trackId ) {
+	$mmApiKey = "5a9df367bba4f12c95e7ba3111d410c6";
+	$mmApiRootUrl = "http://api.musixmatch.com/ws/1.1/";
+	$mmLyricsEndpoint = "track.lyrics.get?";
+	$mmTrackId = "track_id=".$trackId;
+	$mmQuery = $mmApiRootUrl.$mmLyricsEndpoint."apikey=".$mmApiKey."&".$mmTrackId;
+	return $mmQuery;
+}
 //Santize the hint string given by ajax.
 //Making this a reusable function just in case
 //This implementation formats for spotify web api
@@ -39,9 +70,15 @@ function spSanitize( $request ) {
 	return str_replace(" ", "+", $request);
 }
 
+function mmSanitize( $request ) {
+	return str_replace(" ", "%20", $request);
+}
+
 function getParser( $type, $data ) {
 	if( $type == "search" ) { parseSpResponse( $data ) ; }
 	else if( $type == "artist" ) { parseEnResponse( $data ); }
+	else if( $type == "track" ) { parseMmResponse( $data ); }
+	else if( $type == "lyrics" ) { parseMmResponse( $data ); }
 }
 
 //Decode JSON response from external API. Expects a JSON encoded string
@@ -52,7 +89,7 @@ function parseSpResponse( $data ) {
 	$dataArr = json_decode($data, true);
 	foreach($dataArr["artists"]["items"] as $d) {
 		$artistName = str_replace($_POST['hintStr'], '<b>'.$_POST['hintStr'].'</b>', $d["name"]);
-		echo '<li id="'.$d["id"].'" onclick="setSelect(\''.str_replace("'", "\'", $d["name"]).'\')"><a href="html/cloudpage.html?artistId='.$d["id"].'">'.$artistName.'</a></li>';
+		echo '<li id="'.$d["id"].'" onclick="setSelect(\''.str_replace("'", "\'", $d["name"]).'\')">'.$artistName.'</li>';
 	}
 }
 
@@ -62,6 +99,32 @@ function parseEnResponse( $data ) {
 	$lcForeignId 	= $dataArr["foreign_id"];
 	if($catalog == "lyricfind-US") { return $lcForeignId; }
 	return null;
+}
+
+function parseMmResponse( $data ) {
+	$dataArr = json_decode($data, true);
+	$artist = new Artist($_POST['hintStr']);
+	$tracks = array();
+	foreach( $dataArr['message']['body']['track_list'] as $track ) {
+		$t = new Song($track['track']['track_name'], $artist, $track['track']['track_id']);
+		$lyricsQuery = mmQueryGetLyrics($track['track']['track_id']);
+		$response = execRequest($lyricsQuery);
+		$response = json_decode($lyrics, true);
+		$lyrics = $response["message"]["body"]["lyrics"]["lyrics_body"];
+		$t->setLyrics($lyrics);
+		$t->parseLyrics();
+		$tracks[$t->mName] = $t;
+	}
+	$artist->setSongs($tracks);
+	$cloud = new Cloud($artist);
+	$_SESSION['artist'] = $artist;
+	echo json_encode(array('cloud_string' => $cloud->mHtml, 'tracks' => json_encode($tracks)));
+}
+
+function parseMmLyricsResponse( $data ) {
+	$dataArr = json_decode($data, true);
+	$artist = $_SESSION['artist'];
+
 }
 
 function execRequest( $query ) {
@@ -75,11 +138,9 @@ function execRequest( $query ) {
 	curl_close($curl);
 	return $responseData;
 }
-
 $hintStr = spSanitize($_POST['hintStr']);
 $reqType = $_POST["reqType"];
 $query = getQuery($reqType, $hintStr);
 $responseData = execRequest($query);
 getParser($reqType, $responseData);
-
 ?>
