@@ -1,1 +1,23 @@
-/*lyricscloud.css*/
+/*if($wordFreq < 5){
+			return "cloud-word-big";
+		}
+		else if($wordFreq > 5 && $wordFreq < 10) {
+			return "cloud-word-medium";
+		}
+		else {
+			return "cloud-word-small";
+		}
+*/
+
+.cloud-word-big
+{
+	font-size: 25px;
+}
+.cloud-word-medium
+{
+	font-size: 15px;
+}
+.cloud-word-small
+{
+	font-size: 5px;
+}
