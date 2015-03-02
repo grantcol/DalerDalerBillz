@@ -1,1 +1,14 @@
 /*lyricscloud.css*/
+
+.cloud-word-big
+{
+	font-size: 25px;
+}
+.cloud-word-medium
+{
+	font-size: 15px;
+}
+.cloud-word-small
+{
+	font-size: 5px;
+}
