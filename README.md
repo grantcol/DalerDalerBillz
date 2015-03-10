@@ -25,6 +25,7 @@ We will be using [PHPUnit](https://phpunit.de/index.html) for our unit testing f
 
 ###Black box
 Black box testing will, as of this writing, not be implemented with cucumber. Rather we will be writing these tests literaly in the form of sequential instructions for the client to run through with clear verification criteria. For example: 
+
 1. Navigate to [url here]
 2. Verify that [url] displays "LyricsCloud" and an input
 3. Input an artist name 
