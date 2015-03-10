@@ -1,0 +1,21 @@
+Black Box Testing: 
+
+- Definition: software testing method in which the internal structure/ design/ implementation 
+  of the item being tested is NOT known to the tester.
+  
+- Mainly applicable to higher levels of testing.
+
+- Covers the external structure of the implementation and its features. 
+
+- Generally, independent Software Testers. 
+
+White Box Testing: 
+
+- a software testing method in which the internal structure/ design/ 
+  implementation of the item being tested is known to the tester.
+
+- Mainly applicable to lower levels of testing:Unit Testing Integration Testing.
+
+- Covers the internal structure of the implementation and its features. 
+
+- People responsible: Generally, Software Developers. 
