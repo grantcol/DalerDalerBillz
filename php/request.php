@@ -62,6 +62,28 @@ function mmQueryGetLyrics( $trackId ) {
 	$mmQuery = $mmApiRootUrl.$mmLyricsEndpoint."apikey=".$mmApiKey."&".$mmTrackId;
 	return $mmQuery;
 }
+
+function azlGetLyrics( $artist, $name ) {
+	$retVal = null;
+	$url = "http://www.azlryics.com/lyrics/".$artist."/".$name.".html";
+	$contents = file_get_contents($url);
+	//check if contents is valid or not 
+	//contents should just be a string so we can cut out 
+	//most of the DOM preceeding the meat and everything after
+	$splitBody = explode("<!-- start of lyrics -->", $contents);
+	if($splitBody[0] != $contents) {
+		//we got good lyrics 
+		echo $splitBody;
+		//split it again on the end comment for just the lyrics
+		$lyrics = explode("<!-- end of lyrics -->", $splitBody[1]);
+		echo $lyrics;
+		//clean up the br tags in the lyrics
+		$lyricsClean = str_replace("<br>", "", $lyrics);
+		$retVal = $lyricsClean;
+	}
+	return $retVal;
+} 
+
 //Santize the hint string given by ajax.
 //Making this a reusable function just in case
 //This implementation formats for spotify web api
