@@ -17,8 +17,10 @@ Should be pretty simple. Just keep secondary HTML, js and PHP files in their res
 
 ### White box 
 White box testing will be straightforward, run of the mill, unit testing. Test all the methods (including the constructor) of each class. Assertions need not be too extensive. Simple assertEquals should do in most cases since our object are reasonably dumb containers without much logic. See `ArtistTest.php` for a simple example on the structure and layout (Pay attention to the Note: comment at the head of the class' implementation!). 
+
 For request.php, the file which contains the majority of the logic code in it's three parsing functions (xxParseResponse) a bit more creativity must be put into the tests but it shouldn't be too complicated. As for the query functions (xxQuery..) and the factory functions (getParser, getQuery) simple equality assertions should be sufficient. Feed the function an arbitrary input (consider a dataProvider function!) and assert the equality. See for examples and write further tests into `RequestTest.php`.
 We will be using [PHPUnit](https://phpunit.de/index.html) for our unit testing framework so download the stable release and make sure it's set up properly on your dev machine. Refer to the [docs](https://phpunit.de/manual/current/en/phpunit-book.pdf) for answers to questions. 
+
 **NOTE:** PHPUnit, once installed can be used from the commandline via the `phpunit` [command](https://phpunit.de/manual/current/en/textui.html). Test using this interface. Since we have a /tests dir simply use `$ phpunit tests` to run all the available tests. This nice cli makes it no less convienient to speperate tests into appropriately named files as opposed to one monolithic test source file; so please do so.  
 
 ###Black box
