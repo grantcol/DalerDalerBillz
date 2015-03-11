@@ -8,9 +8,9 @@ session_start();
 function getQuery( $type,  $qArg1, $qArg2 = "none" ) {
 	if( $type == "search" ) { return spQuerySearchArtist( $qArg1 ) ; }
 	else if( $type == "artist" ) { return mmQuerySearchArtists( $qArg1 ); }
-	else if( $type == "track" ) { return mmQueryGetArtistTracks( $qArg1 ); }
+	else if( $type == "track" ) { return spQueryGetArtist( $qArg1 ); }
+	//else if( $type == "track" ) { return mmQueryGetArtistTracks( $qArg1 ); }
 	else if( $type == "lyrics" ) { return mmQueryGetLyrics( $qArg1 ); }
-	//else if( $type == "songs" && $qArg2 != "none" ) { return enQuerySearchSong( $qArg1, $qArg2 ); }
 } 
 
 function spQuerySearchArtist( $searchStr ) {
@@ -25,7 +25,7 @@ function spQueryGetArtist( $artistId ) {
 	return $spSearchArtistEndPoint.$artistId."/top-tracks?country=US";
 }  
 
-function enQuerySearchSong( $artist, $song ) {
+/*function enQuerySearchSong( $artist, $song ) {
 	$lyricFindBucketId 		= "bucket=id:lyricfind-US&limit=true&bucket=tracks";
 	$enApiKey 				= "6DJYT8JMVXSOHNC92";
 	$enResponseFormat 		= "&format=json";
@@ -33,7 +33,7 @@ function enQuerySearchSong( $artist, $song ) {
 	$enSearchTitle 			= "title=".$song;
 	$enSongSearchEndPoint 	= "http://developer.echonest.com/api/v4/song/search?api_key=";
 	return $enSongSearchEndPoint.$enApiKey.$enResponseFormat."&".$enSearchArtist."&".$enSearchTitle."&".$lyricFindBucketId;
-} 
+} */
 
 function mmQuerySearchArtists( $artistName ) {
 	$mmApiKey = "5a9df367bba4f12c95e7ba3111d410c6";
@@ -65,7 +65,8 @@ function mmQueryGetLyrics( $trackId ) {
 
 function azlGetLyrics( $artist, $name ) {
 	$retVal = null;
-	$url = "http://www.azlryics.com/lyrics/".$artist."/".$name.".html";
+	$url = "http://www.azlyrics.com/lyrics/".azlSanitize($artist)."/".azlSanitize($name).".html";
+	//echo $url;
 	$contents = file_get_contents($url);
 	//check if contents is valid or not 
 	//contents should just be a string so we can cut out 
@@ -73,13 +74,18 @@ function azlGetLyrics( $artist, $name ) {
 	$splitBody = explode("<!-- start of lyrics -->", $contents);
 	if($splitBody[0] != $contents) {
 		//we got good lyrics 
-		echo $splitBody;
+		//echo $splitBody;
 		//split it again on the end comment for just the lyrics
 		$lyrics = explode("<!-- end of lyrics -->", $splitBody[1]);
-		echo $lyrics;
+		//echo $lyrics;
 		//clean up the br tags in the lyrics
-		$lyricsClean = str_replace("<br>", "", $lyrics);
-		$retVal = $lyricsClean;
+		//var_dump($lyrics[0]);
+		$lyricsClean = preg_replace("((<br>)|(<br \/>)|(<i>)|(<\/i>)|(\"))", '', $lyrics[0]);
+		$lyricsCleanTrim = trim($lyricsClean, "\r\n");
+		/*if($lyricsCleanTrim == $lyricsClean) { echo "same"; }
+		else { echo $lyricsCleanTrim; echo 'r....'; echo $lyricsClean; }*/
+		//echo $lyricsClean;
+		$retVal = $lyricsCleanTrim;
 	}
 	return $retVal;
 } 
@@ -96,10 +102,16 @@ function mmSanitize( $request ) {
 	return str_replace(" ", "%20", $request);
 }
 
+function azlSanitize( $str ) {
+	$str = strtolower($str);
+	return str_replace(" ", "", $str);
+}
+
 function getParser( $type, $data ) {
 	if( $type == "search" ) { parseSpResponse( $data ) ; }
-	else if( $type == "artist" ) { parseEnResponse( $data ); }
-	else if( $type == "track" ) { parseMmResponse( $data ); }
+	/*else if( $type == "artist" ) { parseEnResponse( $data ); }*/
+	/*else if( $type == "track" ) { parseMmResponse( $data ); }*/
+	else if( $type == "track" ) { parseSpTopTracksResponse( $data ); }
 	else if( $type == "lyrics" ) { parseMmResponse( $data ); }
 }
 
@@ -111,19 +123,49 @@ function parseSpResponse( $data ) {
 	$dataArr = json_decode($data, true);
 	foreach($dataArr["artists"]["items"] as $d) {
 		$artistName = str_replace($_POST['hintStr'], '<b>'.$_POST['hintStr'].'</b>', $d["name"]);
-		echo '<li id="'.$d["id"].'" onclick="setSelect(\''.str_replace("'", "\'", $d["name"]).'\')">'.$artistName.'</li>';
+		echo '<li id="'.$d["id"].'" onclick="setSelect(\''.str_replace("'", "\'", $d["name"]).'\', \''.$d["id"].'\')">'.$artistName.'</li>';
 	}
 }
 
-function parseEnResponse( $data ) {
+//It through the list of top tracks and query azl for lyrics to each song
+//add song object to artists mSongs list for future reference
+//save the artist to $_SESSION for access on later pages
+function parseSpTopTracksResponse( $data ) {
+	$dataArr = json_decode($data, true);
+	$artist = new Artist($_POST["hintStr"]);
+	$tracks = array();
+	//var_dump($artist);
+	//echo $dataArr["tracks"][0]["name"];
+	//var_dump($dataArr["tracks"][0]);
+	foreach( $dataArr["tracks"] as $track ) {
+		$t = new Song($track["name"], $artist, null);
+		$lyrics = azlGetLyrics($artist->mName, $t->mName);
+		//echo $lyrics;
+		if($lyrics != null) {
+			//explode lyrics string into array
+			//echo "parse";
+			$s = explode(" ", $lyrics);
+			//var_dump($s);
+			$t->setLyrics($s);
+			$t->parseLyrics();
+			$tracks[$t->mName] = $t;
+		}
+	}
+	$artist->setSongs($tracks);
+	$cloud = new Cloud($artist);
+	$_SESSION['artist'] = $artist;
+	echo json_encode(array('cloud_string' => $cloud->mHtml, 'tracks' => json_encode($tracks)));
+}
+
+/*function parseEnResponse( $data ) {
 	$dataArr 		= json_decode($data, true);
 	$catalog 		= $dataArr["catalog"];
 	$lcForeignId 	= $dataArr["foreign_id"];
 	if($catalog == "lyricfind-US") { return $lcForeignId; }
 	return null;
-}
+}*/
 
-function parseMmResponse( $data ) {
+/*function parseMmResponse( $data ) {
 	$dataArr = json_decode($data, true);
 	$artist = new Artist($_POST['hintStr']);
 	$tracks = array();
@@ -141,13 +183,13 @@ function parseMmResponse( $data ) {
 	$cloud = new Cloud($artist);
 	$_SESSION['artist'] = $artist;
 	echo json_encode(array('cloud_string' => $cloud->mHtml, 'tracks' => json_encode($tracks)));
-}
+}*/
 
-function parseMmLyricsResponse( $data ) {
+/*function parseMmLyricsResponse( $data ) {
 	$dataArr = json_decode($data, true);
 	$artist = $_SESSION['artist'];
 
-}
+}*/
 
 function execRequest( $query ) {
 	//Set up a cURL resource for the semantic request
@@ -160,9 +202,27 @@ function execRequest( $query ) {
 	curl_close($curl);
 	return $responseData;
 }
-$hintStr = spSanitize($_POST['hintStr']);
-$reqType = $_POST["reqType"];
-$query = getQuery($reqType, $hintStr);
+$DEBUG = false;
+$hintStr;
+$reqType;
+$artistId;
+if(!$DEBUG){
+	$hintStr = spSanitize($_POST['hintStr']);
+	$reqType = $_POST["reqType"];
+	$artistId = ($reqType == "track") ? $_POST["artistId"] : $hintStr;	
+}
+else{
+	$hintStr = spSanitize($_GET['hintStr']);
+	$reqType = "track";//$_POST["reqType"];
+	$artistId = ($reqType == "track") ? $_GET["artistId"] : $hintStr;
+} 
+
+//this is a bit hacky. sorry
+//if we have the track request type we dont need the hintstr since that is only for autocomplete
+//so we will set artistid to the posted artist id since the getQuerymethod doesnt have context of it's second param
+//else we can just set artistid to be hintstr.
+$query = getQuery($reqType, $artistId);
 $responseData = execRequest($query);
+//var_dump($responseData);
 getParser($reqType, $responseData);
 ?>

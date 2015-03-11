@@ -1,27 +1,32 @@
 <?php 
 session_start();
 
-function execRequest( $query ) {
-	//Set up a cURL resource for the semantic request
-	$curl = curl_init();
-	curl_setopt_array($curl, array(
-		CURLOPT_RETURNTRANSFER => 1,
-		CURLOPT_URL => $query
-	));
-	$responseData = curl_exec($curl);
-	curl_close($curl);
-	return $responseData;
+function azlGetLyrics( $artist, $name ) {
+	$retVal = "NO LYRICS AT ";
+	$url = "http://www.azlyrics.com/lyrics/".azlSanitize($artist)."/".azlSanitize($name).".html";
+	$retVal .= $url;
+	$contents = file_get_contents($url);
+	$splitBody = explode("<!-- start of lyrics -->", $contents);
+	if($splitBody[0] != $contents) {
+		$retVal = "";
+		$lyrics = explode("<!-- end of lyrics -->", $splitBody[1]);
+		$lyricsClean = preg_replace("((<br>)|(<br \/>)|(<i>)|(<\/i>)|(\"))", '', $lyrics[0]);
+		$lyricsCleanTrim = trim($lyricsClean, "\r\n");
+		$retVal = $lyricsCleanTrim;
+	}
+	return $retVal;
+} 
+
+function azlSanitize( $str ) {
+	$str = strtolower($str);
+	return str_replace(" ", "", $str);
 }
 
 $t_id = $_GET['track_id'];
 $t_title = $_GET['track_title'];
 $artist = $_GET['artist'];
 $word = $_GET['word'];
-$mmApiKey = "5a9df367bba4f12c95e7ba3111d410c6";
-$mmQuery = "http://api.musixmatch.com/ws/1.1/track.lyrics.get?apikey=".$mmApiKey."&track_id=".$t_id;
-$response = execRequest($mmQuery);
-$response = json_decode($response, true);
-$body = $response["message"]["body"]["lyrics"]["lyrics_body"];
+$body = azlGetLyrics(azlSanitize($artist), azlSanitize($t_title));
 $bodyHigh = str_replace($word, "<span class='highlight'>".$word."</span>", $body);
 ?>
 <!DOCTYPE html>
@@ -46,6 +51,10 @@ $bodyHigh = str_replace($word, "<span class='highlight'>".$word."</span>", $body
       		border-color: #bf55ec;
 		    font-family: Helvetica;
 		}
+		.highlight
+		{
+			background-color: #F3F315;
+		}
 
 
 	</style>
@@ -64,6 +73,5 @@ $bodyHigh = str_replace($word, "<span class='highlight'>".$word."</span>", $body
 		<button style = "width: 90px;height: 50px;">Song List</button>
 		<button style = "width: 90px;height: 50px;">Word Cloud </button>
 	</center>
-	<script type="text/javascript" src="http://tracking.musixmatch.com/t1.0/AMa6hJCIEzn1v8RuOP"></script>
 </body>
 </html>

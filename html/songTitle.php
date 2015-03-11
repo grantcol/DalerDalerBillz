@@ -1,6 +1,12 @@
 <?php 
 include '../php/core.php';
 session_start();
+
+function azlSanitize( $str ) {
+	$str = strtolower($str);
+	return str_replace(" ", "", $str);
+}
+
 $word = $_GET['wordRef'];
 $freq = null;
 $artist = $_SESSION['artist'];

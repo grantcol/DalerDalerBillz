@@ -23,9 +23,10 @@ function autoCompleteQuery() {
 }
 
 //Fills the input with the selected artist
-function setSelect(item) {
+function setSelect(item, id) {
 	
 	$('#artist_search').val(item);
+	$('#artist_search').data("artistid", id);
 	$('#artist_list').hide();
 }
 
@@ -45,10 +46,12 @@ function spArtistQuery(artistId) {
 
 function generateWordCloud() {
 	var hintStr = $("#artist_search").val();
+	var artistId = $("#artist_search").data("artistid");
+	console.log("AID "+artistId);
 	$.ajax({
 		url : 'php/request.php',
 		type : 'POST',
-		data : { hintStr : hintStr, reqType : 'track' },
+		data : { hintStr : hintStr, reqType : 'track', artistId : artistId },
 		success : function(data) {
 			console.log(data);
 			//setup the 2nd page here with wordcloud etc.

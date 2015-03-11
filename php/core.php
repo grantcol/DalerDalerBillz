@@ -109,7 +109,7 @@ class Cloud
 		foreach($aWords as $key => $value){
 			$amw = $value->mWords;
 			foreach($amw as $key => $value) {
-				$words[$key] = $value;
+				$words[$key] += $value;
 			}
 		}
 		$sorted = arsort($words);

@@ -1,5 +1,8 @@
 /*lyricscloud.css*/
-
+.highlight
+{
+	background-color: #F3F315;
+}
 .cloud-word-big
 {
 	font-size: 25px;
