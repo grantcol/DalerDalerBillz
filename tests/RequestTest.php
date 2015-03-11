@@ -1,6 +1,6 @@
 <?php 
 
-require '../php/request.php';
+require 'request.php';
 
 class RequestTest extends PHPUnit_Framework_TestCase 
 {

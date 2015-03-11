@@ -1,6 +1,6 @@
 <?php 
 
-require '../php/core.php';
+require 'core.php';
 
 class SongTest extends PHPUnit_Framework_TestCase
 {
