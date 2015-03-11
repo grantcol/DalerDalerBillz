@@ -70,8 +70,9 @@ $bodyHigh = str_replace($word, "<span class='highlight'>".$word."</span>", $body
 		?>
 	</div></center>
 	<center></br></br>
-		<button style = "width: 90px;height: 50px;">Song List</button>
-		<button style = "width: 90px;height: 50px;">Word Cloud </button>
+		<button style = "width: 90px;height: 50px;" onclick="goBack();">Song List</button>
+		<button style = "width: 90px;height: 50px;" onclick="goBack();">Word Cloud </button>
 	</center>
+	<script> function goBack() { window.history.back(); } </script>
 </body>
 </html>

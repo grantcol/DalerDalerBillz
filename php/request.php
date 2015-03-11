@@ -6,11 +6,8 @@ session_start();
 
 //Query type factory
 function getQuery( $type,  $qArg1, $qArg2 = "none" ) {
-	if( $type == "search" ) { return spQuerySearchArtist( $qArg1 ) ; }
-	else if( $type == "artist" ) { return mmQuerySearchArtists( $qArg1 ); }
+	if( $type == "search" ) { return spQuerySearchArtist( $qArg1 ); }
 	else if( $type == "track" ) { return spQueryGetArtist( $qArg1 ); }
-	//else if( $type == "track" ) { return mmQueryGetArtistTracks( $qArg1 ); }
-	else if( $type == "lyrics" ) { return mmQueryGetLyrics( $qArg1 ); }
 } 
 
 function spQuerySearchArtist( $searchStr ) {
@@ -24,44 +21,6 @@ function spQueryGetArtist( $artistId ) {
 	$spSearchArtistEndPoint = "https://api.spotify.com/v1/artists/";
 	return $spSearchArtistEndPoint.$artistId."/top-tracks?country=US";
 }  
-
-/*function enQuerySearchSong( $artist, $song ) {
-	$lyricFindBucketId 		= "bucket=id:lyricfind-US&limit=true&bucket=tracks";
-	$enApiKey 				= "6DJYT8JMVXSOHNC92";
-	$enResponseFormat 		= "&format=json";
-	$enSearchArtist			= "artist=".$artist;
-	$enSearchTitle 			= "title=".$song;
-	$enSongSearchEndPoint 	= "http://developer.echonest.com/api/v4/song/search?api_key=";
-	return $enSongSearchEndPoint.$enApiKey.$enResponseFormat."&".$enSearchArtist."&".$enSearchTitle."&".$lyricFindBucketId;
-} */
-
-function mmQuerySearchArtists( $artistName ) {
-	$mmApiKey = "5a9df367bba4f12c95e7ba3111d410c6";
-	$mmApiRootUrl = "http://api.musixmatch.com/ws/1.1/";
-	$mmApiArtistSearchEndpoint = "artist.search?";
-	$mmArtist = "q_artist=".$artistName;
-	$mmPageSize = "page_size=1";
-	$mmQuery = $mmApiRootUrl."apikey=".$mmApiKey."&".$mmApiArtistSearchEndpoint.$mmArtist."&".$mmPageSize;
-	return $mmQuery;
-}
-
-function mmQueryGetArtistTracks( $artist ) {
-	$mmApiKey = "5a9df367bba4f12c95e7ba3111d410c6";
-	$mmApiRootUrl = "http://api.musixmatch.com/ws/1.1/";
-	$mmArtistTracksEndpoint = "track.search?";
-	$mmArtist = "q_artist=".$artist;
-	$mmQuery = $mmApiRootUrl.$mmArtistTracksEndpoint."apikey=".$mmApiKey."&".$mmArtist."&f_has_lyrics=1";
-	return $mmQuery;
-}
-
-function mmQueryGetLyrics( $trackId ) {
-	$mmApiKey = "5a9df367bba4f12c95e7ba3111d410c6";
-	$mmApiRootUrl = "http://api.musixmatch.com/ws/1.1/";
-	$mmLyricsEndpoint = "track.lyrics.get?";
-	$mmTrackId = "track_id=".$trackId;
-	$mmQuery = $mmApiRootUrl.$mmLyricsEndpoint."apikey=".$mmApiKey."&".$mmTrackId;
-	return $mmQuery;
-}
 
 function azlGetLyrics( $artist, $name ) {
 	$retVal = null;
@@ -98,10 +57,6 @@ function spSanitize( $request ) {
 	return str_replace(" ", "+", $request);
 }
 
-function mmSanitize( $request ) {
-	return str_replace(" ", "%20", $request);
-}
-
 function azlSanitize( $str ) {
 	$str = strtolower($str);
 	return str_replace(" ", "", $str);
@@ -109,10 +64,7 @@ function azlSanitize( $str ) {
 
 function getParser( $type, $data ) {
 	if( $type == "search" ) { parseSpResponse( $data ) ; }
-	/*else if( $type == "artist" ) { parseEnResponse( $data ); }*/
-	/*else if( $type == "track" ) { parseMmResponse( $data ); }*/
 	else if( $type == "track" ) { parseSpTopTracksResponse( $data ); }
-	else if( $type == "lyrics" ) { parseMmResponse( $data ); }
 }
 
 //Decode JSON response from external API. Expects a JSON encoded string
@@ -139,13 +91,14 @@ function parseSpTopTracksResponse( $data ) {
 	//var_dump($dataArr["tracks"][0]);
 	foreach( $dataArr["tracks"] as $track ) {
 		$t = new Song($track["name"], $artist, null);
-		$lyrics = azlGetLyrics($artist->mName, $t->mName);
+		$lyrics = azlGetLyrics(azlSanitize($artist->mName), azlSanitize($t->mName));
 		//echo $lyrics;
 		if($lyrics != null) {
 			//explode lyrics string into array
-			//echo "parse";
-			$s = explode(" ", $lyrics);
-			//var_dump($s);
+			// but before exploding we need to strip carriage returns, newlines, and commas
+			$cr_nl_c_pattern = "((\n)|(\r)|(\t)|(,))";
+			$t_lyrics = preg_replace($cr_nl_c_pattern, " ", $lyrics);
+			$s = explode(" ", $t_lyrics);
 			$t->setLyrics($s);
 			$t->parseLyrics();
 			$tracks[$t->mName] = $t;
@@ -156,40 +109,6 @@ function parseSpTopTracksResponse( $data ) {
 	$_SESSION['artist'] = $artist;
 	echo json_encode(array('cloud_string' => $cloud->mHtml, 'tracks' => json_encode($tracks)));
 }
-
-/*function parseEnResponse( $data ) {
-	$dataArr 		= json_decode($data, true);
-	$catalog 		= $dataArr["catalog"];
-	$lcForeignId 	= $dataArr["foreign_id"];
-	if($catalog == "lyricfind-US") { return $lcForeignId; }
-	return null;
-}*/
-
-/*function parseMmResponse( $data ) {
-	$dataArr = json_decode($data, true);
-	$artist = new Artist($_POST['hintStr']);
-	$tracks = array();
-	foreach( $dataArr['message']['body']['track_list'] as $track ) {
-		$t = new Song($track['track']['track_name'], $artist, $track['track']['track_id']);
-		$lyricsQuery = mmQueryGetLyrics($track['track']['track_id']);
-		$response = execRequest($lyricsQuery);
-		$response = json_decode($lyrics, true);
-		$lyrics = $response["message"]["body"]["lyrics"]["lyrics_body"];
-		$t->setLyrics($lyrics);
-		$t->parseLyrics();
-		$tracks[$t->mName] = $t;
-	}
-	$artist->setSongs($tracks);
-	$cloud = new Cloud($artist);
-	$_SESSION['artist'] = $artist;
-	echo json_encode(array('cloud_string' => $cloud->mHtml, 'tracks' => json_encode($tracks)));
-}*/
-
-/*function parseMmLyricsResponse( $data ) {
-	$dataArr = json_decode($data, true);
-	$artist = $_SESSION['artist'];
-
-}*/
 
 function execRequest( $query ) {
 	//Set up a cURL resource for the semantic request
@@ -202,6 +121,7 @@ function execRequest( $query ) {
 	curl_close($curl);
 	return $responseData;
 }
+
 $DEBUG = false;
 $hintStr;
 $reqType;
@@ -223,6 +143,5 @@ else{
 //else we can just set artistid to be hintstr.
 $query = getQuery($reqType, $artistId);
 $responseData = execRequest($query);
-//var_dump($responseData);
 getParser($reqType, $responseData);
 ?>

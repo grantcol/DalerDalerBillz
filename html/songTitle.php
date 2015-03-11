@@ -11,7 +11,6 @@ $word = $_GET['wordRef'];
 $freq = null;
 $artist = $_SESSION['artist'];
 $freq = $artist->getFrequency($word);
-var_dump($freq);
 ?>
 <!DOCTYPE html>
 <html>
@@ -33,7 +32,7 @@ var_dump($freq);
     		height: 50px;
     		font-family: Helvetica; 
 		}
-		button{
+		button {
 			font-family:Helvetica;
 			background-color:#bf55ec;
 			border-color:#bf55ec;
@@ -52,31 +51,17 @@ var_dump($freq);
 			<th>Song Name</th>
 			<th>Word Frequency</th>
 		</tr>
-		<!--<tr>
-			<th>Song 1</th>
-			<th>Word Frequency</th>
-		</tr>
-		<tr>
-			<th>Song 2</th>
-			<th>Word Frequency</th>
-		</tr>
-		<tr>
-			<th>Song 3</th>
-			<th>Word Frequency</th>
-		</tr>
-		<tr>
-			<th>Song 4</th>
-			<th>Word Frequency</th>
-		</tr>-->
 		<?php 
 		if(count($freq) > 0){
 			foreach($freq as $key => $value){
+				if($value == NULL) { $value = 0; }
 				echo '<tr><th><a href="lyricPage.php?word='.$word.'&track_title='.$key.'&track_id='.$artist->getSongId($key).'&artist='.$artist->mName.'">'.$key.'</a></th><th>'.$value.'</th></tr>';
 			}
 		}
 		?>
 	</table>
 
-<center><button>Back</button></center>
+<center><button onclick="goBack();">Back</button></center>
+<script> function goBack() { window.history.back(); } </script>
 </body>
 </html>
